@@ -35,23 +35,23 @@ class Homepage extends React.Component {
   		return (this.state.name.length > 0 && this.state.email.length > 0 && this.state.password.length > 0 && this.state.type.length > 0);
   	}
 
-  	handleChange = event => {
+  	handleChange = (event) => {
     	this.setState({
       		[event.target.id]: event.target.value
     	});
   	}
 
-  	handleInput = event => {
+  	handleInput = (event) => {
     	event.preventDefault();
     	this.input(localStorage.getItem("userID"),this.state.inputText, localStorage.getItem("userType"), localStorage.getItem("userCompany"));
   	}
 
-  	handleSignup = event => {
+  	handleSignup = (event) => {
     	event.preventDefault();
-    	this.createUser(this.state.name, this.state.email, this.state.password, this.state.type, localStorage.getItem("userCompany"));
+    	this.createUser(this.state.email, this.state.password, this.state.name, this.state.type, localStorage.getItem("userCompany"));
   	}
 
-  	handleApproval = event => {
+  	handleApproval = (event) => {
   		for (const approval of this.approvals) {
 			this.approveText(approval)
 		}
@@ -80,23 +80,34 @@ class Homepage extends React.Component {
 	}
 
   	input(userID, inputText, type, userCompany) {
+  		console.log(userID + " : " + inputText + " : " + type + " : " + userCompany)
 		axios.post('https://fast-lake-41497.herokuapp.com/input', querystring.stringify({userID: userID, text: inputText, type: type, userCompany: userCompany}))
     	.then(res => {
 			console.log(res);
 			console.log(res.data);
-			if(res.data.status == "success"){
+			if(res.data.status === "success"){
 				console.log("success")
+				if(localStorage.getItem("userType") !== "employee"){
+					var obj1 = this.state.output
+					obj1[res.data.id] = this.state.inputText
+					this.setState({output: obj1})
+				}
+				this.setState({inputText:""})
 			}
 		});
 	}
 
-	approveText(id) {
+	approveText = (id) => {
 		axios.post('https://fast-lake-41497.herokuapp.com/updateStatus', querystring.stringify({id: id}))
     	.then(res => {
 			console.log(res);
 			console.log(res.data);
-			if(res.data.status == "success"){
+			if(res.data.status === "success"){
 				console.log("success")
+				this.approvals.delete(id);
+				var obj1 = this.state.pending
+				delete obj1[id]
+				this.setState({pending: obj1})
 			}
 			else
 				console.log("failed")
@@ -107,7 +118,6 @@ class Homepage extends React.Component {
 		const userID = localStorage.getItem("userID");
 		axios.post('https://fast-lake-41497.herokuapp.com/inputList', querystring.stringify({userID: userID}))
     	.then(res => {
-    		console.log(res);
 			console.log(res.data);
 			if(res.data.status === "success") {
 				if(res.data.inputs.length > 0){
@@ -162,7 +172,7 @@ class Homepage extends React.Component {
 		var outputTexts = [];
 		var pendingTexts = [];
 
-		if(this.state.pending !== undefined){
+		if(this.state.output !== undefined){
 			outputTexts = Object.keys(this.state.output).map((key, i) => {
 				return(
 					<p key={key}>{this.state.output[key]}</p>
@@ -191,7 +201,7 @@ class Homepage extends React.Component {
 				</div>
 
 				<div style={{marginBottom:10+"px"}}>
-					<h3>Enter Input Text</h3>
+					<h4>Enter Input Text</h4>
 					<form onSubmit={this.handleInput}>
 						<div>
 							<input
@@ -213,14 +223,13 @@ class Homepage extends React.Component {
 				</div>
 
 				<div style={{marginBottom:10+"px"}}>
-				<h3>Approved Output Texts</h3>
+				<h4>Approved Output Texts</h4>
 					{outputTexts}
 				</div>
 
 				{isAdmin ? (
-
-				<div style={{marginBottom:10+"px"}}>
-				<h3>Add a fellow Colleague</h3>
+					<div style={{marginBottom:10+"px"}}>
+				<h4>Add a fellow Colleague</h4>
 					<form onSubmit={this.handleSignup}>
 						<div>
 							<input
@@ -267,15 +276,15 @@ class Homepage extends React.Component {
 					    </div>
 					</form>
 				</div>
+
 				) :
 				(
 					<br />
 				)}
 
 				{isAdmin ? (
-
-				<div>
-				<h3>Here are all the pending inputs!</h3>
+					<div>
+				<h4>Here are all the pending inputs!</h4>
 					{pendingTexts}
 					<div>
 						<button

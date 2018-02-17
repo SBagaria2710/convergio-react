@@ -6,5 +6,17 @@
   .Login form {
     margin: 0 auto;
     max-width: 320px;
+    border: 1px;
+  }
+
+  h3 {
+  	margin: 0 auto;
+    max-width: 330px;
+  }
+
+  .guest {
+  	margin: 0 auto;
+    max-width: 200px;
+
   }
 }
